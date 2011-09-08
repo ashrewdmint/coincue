@@ -1,0 +1,61 @@
+
+Sending a notification:
+
+[{
+  notification: {
+    name: LISTENER_NAME,
+    for_addresses: [HASH], // Might be two if we listen for the sending and receiving address
+    type: 'new_transaction',
+    transaction: {
+      txid: HASH,
+      confirmations: 1,
+      totalIn: 100,
+      totalOut: 102,
+      fee: 2,
+      type: 'sent',
+      sender_address: HASH,
+      receiver_address: HASH,
+      amount: FLOAT,
+      
+      // Is the below even needed?
+      inputs: [{
+        transaction: HASH,
+        index: INT,
+        address: ADDRESS,
+        amount: FLOAT,
+      }],
+      outputs: [{
+        address: ADDRESS,
+        amount: FLOAT,
+      }]
+    }
+  }
+}]
+
+[{
+  notification: {
+    for_address: HASH,
+    type: 'new_confirmation',
+    ...
+  }
+}]
+
+API stuff
+
+add_listener
+  name: LISTENER_NAME
+  url: URL_FOR_POST
+  addresses: [HASHES] // if not using default addresses
+  min_confirmations: 0 // Let me know when it first pops up -- default is 1
+  max_confirmations: 1 // Stop notifying me once it's been confirmed -- default
+  // events: ["new_transaction", "new_confirmation"]
+
+listen_once
+  url: URL,
+  sender: ADDRESS,
+  receiver: ADDRESS,
+  amount: FLOAT
+  min_confirmations: 0,
+  max_confirmations: 1
+
+E.g., tell me when this transaction pops up, and when it gets confirmed. Then forget it.
