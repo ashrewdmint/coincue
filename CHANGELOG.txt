@@ -1,0 +1,66 @@
+# CHANGELOG
+
+Read this from top to bottom. You should have a good
+understanding of BitCoin transactions, which you can read
+up on here:
+
+  https://en.bitcoin.it/wiki/Transactions
+
+Otherwise, the code, and my descriptions, will seem
+like a meaningless, neuron-killing madness.
+
+## 2011/09/07
+
+To run the app, run:
+
+  $ node app.js
+
+This will make a new client, start it, and spew a ton of
+output into the terminal. It will take a LONG TIME before
+all the blocks load, so sit tight. And the output will be
+very boring because most of the early blocks appear to be
+only 50 BTC mining bounties, so there's nothing to parse.
+
+Okay, so the main code now is the parseTxs() function.
+This takes one or a list of transactions and digs up
+some data related to them for the DB. It's based on the
+getOutpoints() function from scratchpaper.js, which I
+copied from the source for node-bitcoin-explorer. I added
+plenty of comments to it so I could understand what was
+going on there.
+
+Anyway, parseTxs(), once it finds the relevant data,
+will start adding some useful properties to each tx.
+
+ * totalIn   BigInt, total value of inputs
+ * totalOut  BigInt, total value of outputs
+ * inputs    Array of input objects
+ * ouputs    Array of output objects
+
+I'm creating input and output objects to conveniently
+summarize the transaction information that is useful
+if you are interested in determining if a transaction
+relates to any of your addresses or not.
+
+Input object:
+
+ * transactionHash    The transaction's hash
+ * index              Index of transaction outpoint
+                      that corresponds to this input
+ * address            Sender's Bitcoin address
+ * value              BigInt of transaction value
+ * btc                Regular transaction value
+
+The output object is very similar:
+
+  * address
+  * index
+  * value
+  * btc
+
+Okay, it looks like there is something wrong with
+parseTxs() because I saw some non-mining bounty
+transactions and I didn't see the special data that I
+added.
+
+(Yeah, I'm still trying to download the blockchain).

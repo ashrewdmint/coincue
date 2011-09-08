@@ -1,0 +1,24 @@
+# TODO
+
+Tentative. Just trying to get the general plan across.
+
+ * Fix parseTxs()
+ 
+ * Listen for new transactions, even ones with no
+   confirmations, and parse them.
+   
+ * If someone gets a mining bounty, that should
+   register as a transaction for them somehow
+   
+ * Listen for new confirmations
+ 
+ * Switch the node to the testnet
+ 
+ * Make a Rails app that uses the same DB. It will
+   let people sign up and will function as the API
+   interface.
+   
+ * When Node app finds a new transaction, it should
+   Look at the DB to see if anyone is listening for
+   any addresses contained in the transaction. If
+   so, it should POST the data to the users.
