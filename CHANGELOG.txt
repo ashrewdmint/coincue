@@ -64,3 +64,9 @@ transactions and I didn't see the special data that I
 added.
 
 (Yeah, I'm still trying to download the blockchain).
+
+## 2011/09/10
+
+I fixed my parseTxs function. It was breaking at
+certain points and Node was not reporting any errors
+for some reason.

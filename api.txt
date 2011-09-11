@@ -59,3 +59,26 @@ listen_once
   max_confirmations: 1
 
 E.g., tell me when this transaction pops up, and when it gets confirmed. Then forget it.
+
+
+Transaction data:
+
+{
+  txid:       hash,
+  value:      btc,
+  fee:        btc,
+  isCoinBase: bool,
+  inputs:
+    [{
+      txid:    hash,
+      txindex: index,
+      address: hash,
+      value:   btc
+    }],
+  outputs:
+    [{
+      address: hash
+      value:   btc
+    }]
+}
+
