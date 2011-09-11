@@ -50,27 +50,47 @@ function parseTxs(txs, callback) {
       tx.outputs = [];
       tx.parsed = true;
       
+      tx.getParsed = function(){
+        return {
+          hash: tx.hash,
+          inputs: tx.inputs,
+          outputs: tx.outputs,
+        };
+      };
+      
       // Iterate through transaction inputs
       tx.ins.forEach(function(txInput){
         // Find this transaction's "source", or referenced transaction
         var hash = txInput.outpoint.hash.toString('base64');
         var sourceTx = referenceTxs[hash];
+        var sourceOutAddress, sourceOutValue, sourceOutBtc;
         
         // Find the output the input is referencing
-        var sourceOut = sourceTx.outs[txInput.outpoint.index];
+        if (sourceTx) {
+          var sourceOut = sourceTx.outs[txInput.outpoint.index];
+          
+          if (sourceOut) {
+            sourceOutAddress = sourceOut.script.toString('base64');
+            sourceOutValue   = Util.valueToBigInt(sourceOut.value);
+          
+            // Readable value for those of us who don't understand BigInts
+            sourceOutBtc = Util.bigIntToBTC(inputObj.value);
+          }
+        }
         
         var inputObj = {
           transactionHash: hash,
+          transactionFound: !!sourceTx,
           index: txInput.outpoint.index,
-          address: sourceOut.script.toString('base64'),
-          value: Util.valueToBigInt(sourceOut.value)
+          address: sourceOutAddress,
+          value: sourceOutValue,
+          btc:   sourceOutBtc
         };
         
-        // Readable value for those of us who don't understand BigInts
-        inputObj.btc = Util.bigIntToBTC(inputObj.value);
-        
         tx.inputs.push(inputObj);
-        tx.totalIn.add(inputObj.value); // Add to total value in
+        
+        if (inputObj.value)
+          tx.totalIn.add(inputObj.value); // Add to total value in
       });
       
       // Iterate through transaction outputs
@@ -78,15 +98,19 @@ function parseTxs(txs, callback) {
         // Add to total value out
         
         var outputObj = {
-          address: txOutput,
+          address: txOutput.script.toString('base64'),
           index: index,
           value: Util.valueToBigInt(txOutput.value)
         };
         
         outputObj.btc = Util.bigIntToBTC(outputObj.value);
         
-        tx.totalOut.add(outputObj.value);
         tx.outputs.push(outputObj);
+        
+        // For some reason I have to convert to a number
+        // or else the program breaks without an error
+        var number = outputObj.value.toNumber();
+        tx.totalOut = tx.totalOut.add(number);
       });
       
       // Determine transaction fee: output value - input value
@@ -99,38 +123,19 @@ function parseTxs(txs, callback) {
       txs[index] = tx;
     });
     
+    return callback({txs: txs});
+    
   });
-  
-  callback({txs: txs});
-  
 }
-
-chain.on('blockAdd', function(data){
-  parseTxs(data.txs, function(data){
-    if (data.error) {
-      console.log("Error");
-      console.log(data.error);
-      return;
-    }
-    
-    data.txs.forEach(function(tx){
-      console.log(tx.hash.toString('base64'));
-      if (! tx.parsed) {
-        
-        var value = Util.valueToBigInt(tx.outs[0].value);
-        var btc = Util.bigIntToBTC(value);
-        console.log("BTC: " + btc);
-        return;
-      }
-      
-      console.log(tx.inputs);
-      console.log(tx.ouputs);
-      console.log(tx.btcfee);
-      console.log();
-    });
-    
-  });
-});
 
 node.start();
 
+chain.on('txSave', function(e){
+  parseTxs(e.tx, function(result){
+    if (result.txs) {
+      var tx = result.txs[0];
+      console.log(tx.inputs);
+      console.log(tx.outputs);
+    }
+  });
+});
